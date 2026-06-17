@@ -1,37 +1,34 @@
-import google.generativeai as genai
+prompt = f"""
 
-genai.configure(
-    api_key="YOUR_GEMINI_KEY"
-)
+You are an expert ATS recruiter.
 
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
+Analyze the resume.
 
-def get_ai_feedback(
-    resume_text,
-    job_description
-):
+Analyze the job description.
 
-    prompt = f"""
-    Analyze this resume:
+Provide:
 
-    {resume_text}
+1. ATS Score
 
-    Job Description:
+2. Skills Match
 
-    {job_description}
+3. Missing Skills
 
-    Give:
+4. Resume Improvement Suggestions
 
-    1. ATS improvement suggestions
-    2. Missing skills
-    3. Resume improvements
-    4. Project suggestions
-    """
+5. Recommended Projects
 
-    response = model.generate_content(
-        prompt
-    )
+6. Career Roadmap
 
-    return response.text
+7. Interview Preparation Topics
+
+8. Certifications
+
+Resume:
+
+{resume_text}
+
+Job Description:
+
+{job_description}
+"""
