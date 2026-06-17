@@ -1,7 +1,8 @@
+import "./globals.css";
+
 export const metadata = {
   title: "AI Resume Analyzer",
-  description:
-    "Analyze resumes, ATS scores, skill gaps and career readiness."
+  description: "ATS Resume Analysis Platform",
 };
 
 export default function RootLayout({
