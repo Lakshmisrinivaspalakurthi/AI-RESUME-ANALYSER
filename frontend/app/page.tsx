@@ -39,7 +39,7 @@ export default function Home() {
 
     try {
       // Connects to your FastAPI backend route
-      const response = await fetch("http://localhost:8000/api/analyze", {
+      const response = await fetch("https://ai-resume-analyser-nza0.onrender.com/api/analyze", {
         method: "POST",
         body: formData,
       });
