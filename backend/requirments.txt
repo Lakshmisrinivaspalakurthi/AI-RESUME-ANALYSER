@@ -1,10 +1,5 @@
 fastapi
 uvicorn
-python-multipart
-pypdf
 google-generativeai
-scikit-learn
-numpy
-pandas
-requests
-beautifulsoup4
+PyPDF2
+python-multipart
