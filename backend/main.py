@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # 2. Configure Gemini AI
-GOOGLE_API_KEY = os.getenv("API KEY") # <--- PASTE YOUR KEY HERE
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") # <--- PASTE YOUR KEY HERE
 genai.configure(api_key=GOOGLE_API_KEY)
 
 model = genai.GenerativeModel('gemini-2.5-flash')
