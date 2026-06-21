@@ -16,7 +16,7 @@ export const analyzeResume = async (
   formData.append("jobDescription", jobDescription);
 
   try {
-    const response = await fetch("http://localhost:8000/api/analyze", {
+    const response = await fetch("http://0.0.0.0:10000", {
       method: "POST",
       body: formData,
     });
