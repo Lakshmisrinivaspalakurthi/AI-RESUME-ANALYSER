@@ -7,28 +7,46 @@ import os
 
 app = FastAPI()
 
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "*"
+        # For production, replace with:
+        # "https://your-vercel-app.vercel.app"
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 2. Configure Gemini AI
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") # <--- PASTE YOUR KEY HERE
+# Gemini Configuration
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+if not GOOGLE_API_KEY:
+    raise Exception("GOOGLE_API_KEY environment variable not found")
+
 genai.configure(api_key=GOOGLE_API_KEY)
 
-model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel("gemini-2.5-flash")
+
 
 def extract_text_from_pdf(file_obj):
     reader = PyPDF2.PdfReader(file_obj)
     text = ""
+
     for page in reader.pages:
-        extracted = page.extract_text()
-        if extracted:
-            text += extracted + "\n"
+        page_text = page.extract_text()
+        if page_text:
+            text += page_text + "\n"
+
     return text
+
+
+@app.get("/")
+def home():
+    return {"status": "Backend Running"}
+
 
 @app.post("/api/analyze")
 async def analyze_resume(
@@ -36,41 +54,56 @@ async def analyze_resume(
     jobDescription: str = Form(...)
 ):
     try:
+        # Extract Resume Text
         resume_text = extract_text_from_pdf(resume.file)
-        
-        # 3. Create the Prompt
-        prompt = f"""
-        You are an expert ATS (Applicant Tracking System) and senior tech recruiter.
-        Review the following Resume against the provided Job Description.
-        
-        Job Description:
-        {jobDescription}
-        
-        Resume Text:
-        {resume_text}
-        
-        Analyze the match and provide the output strictly as a JSON object with the following exact keys:
-        "atsScore" (number 0-100),
-        "skillMatch" (number 0-100),
-        "missingSkills" (array of strings),
-        "aiRecommendations" (array of strings)
-        """
 
-        print("Sending to Gemini...")
-        
-        # 4. Call Gemini and FORCE pure JSON output
+        if not resume_text.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Could not extract text from PDF"
+            )
+
+        prompt = f"""
+You are an expert ATS (Applicant Tracking System) and Senior Recruiter.
+
+Analyze the resume against the job description.
+
+JOB DESCRIPTION:
+{jobDescription}
+
+RESUME:
+{resume_text}
+
+Return ONLY valid JSON in this format:
+
+{{
+  "atsScore": 85,
+  "skillMatch": 80,
+  "missingSkills": [
+    "Docker",
+    "AWS"
+  ],
+  "aiRecommendations": [
+    "Add cloud experience",
+    "Highlight AI projects"
+  ]
+}}
+"""
+
         response = model.generate_content(
             prompt,
-            generation_config={"response_mime_type": "application/json"}
+            generation_config={
+                "response_mime_type": "application/json"
+            }
         )
-        
-        # 5. Parse the guaranteed JSON response
-        analysis_results = json.loads(response.text)
 
-        print("Successfully analyzed!")
-        return analysis_results
-        
+        result = json.loads(response.text)
+
+        return result
+
     except Exception as e:
-        print(f"Error during analysis: {e}")
-        # 6. Throw a real HTTP error so the frontend catches it properly
-        raise HTTPException(status_code=500, detail=str(e))
+        print("ERROR:", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
