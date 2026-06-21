@@ -7,14 +7,7 @@ import os
 
 app = FastAPI()
 
-# 1. CORS Configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"], 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 # 2. Configure Gemini AI
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") # <--- PASTE YOUR KEY HERE
